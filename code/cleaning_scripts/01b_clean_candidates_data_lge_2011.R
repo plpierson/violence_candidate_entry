@@ -30,9 +30,7 @@ data <- data %>%
          gender = Gender,
          age = Age) %>% 
   unite(full_name, sep = " ", na.rm = TRUE, first_name:last_name, remove = FALSE) %>% 
-  mutate(electoral_cycle = 2011) %>% 
-  mutate(electoral_cycle = as.factor(electoral_cycle),
-         province = as.factor(province),
+  mutate(province = as.factor(province),
          ward_id = as.factor(ward_id),
          gender = as.factor(gender)) %>% 
   mutate(across(where(is.character), str_trim)) 
@@ -79,7 +77,7 @@ data_summary <- data %>%
   mutate(mean_age = mean(age, na.rm = TRUE)) %>% 
   mutate(prop_female = 1 - (num_male / sum_candidates)) %>% 
   distinct(ward_id, .keep_all = TRUE) %>% 
-  select(province, local_municipality_id, local_municipality_name, electoral_cycle, sum_candidates, num_male, mean_age, prop_female)
+  select(province, local_municipality_id, local_municipality_name, sum_candidates, num_male, mean_age, prop_female)
 
 
     # check out aggregate/summary data for ward-level variables
@@ -153,6 +151,10 @@ data_final <- aw_interpolate(ward_2016_shape_file,
                         intensive = c("mean_age", "prop_female"),
                         extensive = c("sum_candidates", "num_male")
                         )
+
+data_final <- data_final %>% 
+  mutate(electoral_cycle = 2011) %>% 
+  mutate(electoral_cycle = as.factor(electoral_cycle))
 
 
   # WRITE TO PROCESSED_DATA FOLDER -----------------------
