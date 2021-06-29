@@ -56,6 +56,11 @@ plot(data$age) # visually it looks like there are two of these values
 length(which(data$age==999)) # yep...let's convert these to NA for consistency
 
 
+age_outlier <- data %>% 
+  filter(age>500)
+
+
+
 data <- data %>% 
   replace_with_na(replace = list(age = 999))
 
@@ -88,6 +93,7 @@ length(unique(data_summary$local_municipality_name)) # 234
 
 sum(data_summary$sum_candidates) # 30501...great, this comports with number of candidates in raw data
 sum(data_summary$num_male) # 20509...great, this comports with number of male candidates in raw data
+summary(data_summary$mean_age)
 
 
 #########################################
