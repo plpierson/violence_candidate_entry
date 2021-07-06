@@ -82,19 +82,21 @@ data_summary <- data %>%
   mutate(sum_candidates = n()) %>% 
   ungroup() %>% 
   group_by(ward_id) %>% 
-  mutate(num_male = sum(length(which(gender=="M")))) %>% 
+  mutate(num_male = sum(length(which(gender=="M"))),
+         num_female = sum(length(which(gender=="F")))) %>% 
   ungroup() %>% 
   group_by(ward_id) %>% 
   mutate(mean_age = mean(age, na.rm = TRUE)) %>% 
   mutate(prop_female = 1 - (num_male / sum_candidates)) %>% 
   distinct(ward_id, .keep_all = TRUE) %>% 
-  select(local_municipality_id, local_municipality_name, electoral_cycle, sum_candidates, num_male, mean_age, prop_female)
+  select(local_municipality_id, local_municipality_name, electoral_cycle, sum_candidates, num_male, num_female, mean_age, prop_female)
 
 
   # so how does the data look?
 head(data_summary)
 sum(data_summary$sum_candidates) # 36937...this comports with raw data
 sum(data_summary$num_male) # 24612...this comports with raw data
+sum(data_summary$num_female) # 12325...this comports
 summary(data_summary$mean_age)
 summary(data_summary$prop_female)
 
@@ -107,28 +109,3 @@ data_summary <- data_summary %>%
 
 # WRITE TO PROCESSED_DATA FOLDER -----------------------
 saveRDS(data_summary, here("data", "processed_data", "candidates_clean_2016.RDS"))
-
-
-
-
-##### below this line not needed for present analysis
-
-#######################################################################
-####### READ IN 2016 SHAPE FILE AND MERGE WITH CANDIDATES DATA ########
-#######################################################################
-ward_2016_shape_file <- st_read(here("data", "gis_data_raw", "wards2016.shp"))
-
-ward_2016_shape_file <- ward_2016_shape_file %>% 
-  rename(province = ProvinceNa,
-         local_municipality_id = LocalMunic,
-         ward_id = WardID) %>% 
-  mutate(ward_id = as.factor(ward_id)) %>% 
-  select(local_municipality_id, ward_id, geometry)
-
-
-
-  # merge GIS polygons with candidates data
-data_final <- left_join(data_summary, ward_2016_shape_file, by = "ward_id") 
-
-# WRITE TO PROCESSED_DATA FOLDER -----------------------
-saveRDS(data_final, here("data", "processed_data", "01c_candidates_clean_2016.RDS"))
