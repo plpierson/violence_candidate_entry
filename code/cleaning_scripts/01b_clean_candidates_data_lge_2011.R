@@ -55,16 +55,17 @@ summary(data$age) # max is 999.00...so data entry issue somewhere
 plot(data$age) # visually it looks like there are two of these values
 length(which(data$age==999)) # yep...let's convert these to NA for consistency
 
-
 age_outlier <- data %>% 
   filter(age>500)
-
-
 
 data <- data %>% 
   replace_with_na(replace = list(age = 999))
 
-summary(data$age) # verify conversion..now there are two NA values
+  # the areal interpolation we will perform later on does not work well with NAs (let's replace these values with the median == 43.00)
+data <- data %>% 
+  mutate(age = replace_na(age, 43.00))
+
+summary(data$age) # verify conversion..no NAs remaining
 
 
 ######################################
