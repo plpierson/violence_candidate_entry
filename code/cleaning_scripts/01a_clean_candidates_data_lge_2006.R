@@ -80,13 +80,14 @@ data_summary <- data %>%
   mutate(sum_candidates = n()) %>% 
   ungroup() %>% 
   group_by(ward_id) %>% 
-  mutate(num_male = sum(length(which(gender=="M")))) %>% 
+  mutate(num_male = sum(length(which(gender=="M"))),
+         num_female = sum(length(which(gender=="F")))) %>% 
   ungroup() %>% 
   group_by(ward_id) %>% 
   mutate(mean_age = mean(age, na.rm = TRUE)) %>% 
   mutate(prop_female = 1 - (num_male / sum_candidates)) %>% 
   distinct(local_municipality_id, .keep_all = TRUE) %>% 
-  select(province, ward_id, local_municipality_id, local_municipality_name, sum_candidates, num_male, mean_age, prop_female)
+  select(province, ward_id, local_municipality_id, local_municipality_name, sum_candidates, num_male, num_female, mean_age, prop_female)
 
 
 
@@ -146,7 +147,7 @@ data_final <- aw_interpolate(ward_2016_shape_file,
                              weight = "sum",
                              output = "tibble",
                              intensive = c("mean_age", "prop_female"),
-                             extensive = c("sum_candidates", "num_male")
+                             extensive = c("sum_candidates", "num_male", "num_female")
 )
 
 data_final <- data_final %>% 
