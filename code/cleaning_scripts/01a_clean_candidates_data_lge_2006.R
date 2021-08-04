@@ -86,9 +86,25 @@ data_summary <- data %>%
   group_by(ward_id) %>% 
   mutate(mean_age = mean(age, na.rm = TRUE)) %>% 
   mutate(prop_female = 1 - (num_male / sum_candidates)) %>% 
+  mutate(num_independents = sum(length(which(party_name == "INDEPENDENT CANDIDATE")))) %>% 
+  mutate(num_ind_female = sum(length(which(party_name == "INDEPENDENT CANDIDATE" & gender=="F")))) %>% 
+  mutate(num_ind_male = sum(length(which(party_name == "INDEPENDENT CANDIDATE" & gender=="M")))) %>% 
   distinct(local_municipality_id, .keep_all = TRUE) %>% 
-  select(province, ward_id, local_municipality_id, local_municipality_name, sum_candidates, num_male, num_female, mean_age, prop_female)
+  select(province, ward_id, local_municipality_id, local_municipality_name,
+         sum_candidates, num_male, num_female, mean_age, prop_female, num_independents,
+         num_ind_female, num_ind_male)
 
+
+data_num_parties <- data %>% 
+  filter(party_name != "INDEPENDENT CANDIDATE") %>% 
+  group_by(ward_id) %>% 
+  mutate(num_parties_contest = n_distinct(party_name)) %>% 
+  distinct(local_municipality_id, .keep_all = TRUE) %>% 
+select(ward_id, num_parties_contest)
+ 
+
+data_summary <- left_join(data_summary, data_num_parties, by = "ward_id")
+  
 
 
 ##############################################
@@ -147,12 +163,12 @@ data_final <- aw_interpolate(ward_2016_shape_file,
                              weight = "sum",
                              output = "tibble",
                              intensive = c("mean_age", "prop_female"),
-                             extensive = c("sum_candidates", "num_male", "num_female")
+                             extensive = c("sum_candidates", "num_male", "num_female", "num_independents", "num_ind_female", "num_ind_male", "num_parties_contest")
 )
 
 data_final <- data_final %>% 
   mutate(electoral_cycle = 2006) %>% 
-  mutate(electoral_cycle = as.factor(electoral_cycle))
+  mutate(electo ral_cycle = as.factor(electoral_cycle))
 
 
 # WRITE TO PROCESSED_DATA FOLDER -----------------------
