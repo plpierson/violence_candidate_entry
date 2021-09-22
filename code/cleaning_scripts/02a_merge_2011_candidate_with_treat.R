@@ -32,8 +32,37 @@ viol_2006_to_2011 <- viol_ward_sitting %>%
 
 # MANUALLY LINK 2006 WARD IDS TO 2016 WARD IDS USING CENTROID COORDINATES ------------------
 
-#### WARD 1
 
+# first we will need to read in 2006 and 2016 geometries
+  # read in 2006 geomtry
+ward2006 <- st_read(here("data", "gis_data_raw", "Wards2006.shp"))
+ward2006 <- ward2006 %>% 
+  rename(ward_id = WARD_ID)
+
+ward2006 <- st_transform(ward2006, 6148) #transform to SA's official coordinate system, Hartebeesthoek94 (code 6148)
+
+
+
+  # read in 2016 geometry
+ward_2016 <- st_read(here("data", "gis_data_raw", "Wards2016.shp"))
+
+ward_2016 <- st_transform(ward_2016, 6148) #transform to SA's official coordinate system, Hartebeesthoek94 (code 6148)
+names(ward_2016)
+
+ward_2016 <- ward_2016 %>% 
+  select(-c(OBJECTID, Shape__Are, Shape__Len, DistrictMu, District_1, ProvinceNa, WardNumber, Year)) %>% 
+  rename(province_id = ProvinceCo,
+         local_municipality_id = LocalMunic,
+         ward_id = WardID, 
+         local_municipality_name = LocalMun_1)
+
+  # transform to sf object 
+ward_2016 <- st_as_sf(ward_2016)
+
+
+
+
+#### WARD 1
 print(viol_2006_to_2011$ward_id)
 pnts1 <- ward2006 %>% 
   filter(ward_id == "52306006")
@@ -53,7 +82,6 @@ interpolate1$area
 
 
 ##### WARD 2
-
 print(viol_2006_to_2011$ward_id)
 pnts2 <- ward2006 %>% 
   filter(ward_id == "52901005")
@@ -69,7 +97,7 @@ interpolate2 <- interpolate_centroids2 %>% mutate(
 
 pnts2$ward_id
 interpolate2$area
-#so 52901005 is now still 52901005
+#so 52901005 is still 52901005
 
 ##### WARD 3
 print(viol_2006_to_2011$ward_id)
@@ -180,7 +208,6 @@ interpolate8 <- interpolate_centroids8 %>% mutate(
 pnts8$ward_id
 interpolate8$area
 #so 83007003 is now 83007002
-
 
 
 ##### WARD 9
@@ -336,204 +363,102 @@ interpolate16$area
 
 
 
-
-
-
-
-
-
-
-
-
-# IDENTIFY WARDS THAT CHANGED BETWEEN 2006 LGE AND 2011 LGE ------------------
-viol_2006_to_2011_ward_ids <- viol_2006_to_2011$ward_id
-#these are the ward_ids for all wards that experienced an assassination attempt after the 2006 LGEs and
-#prior to the 2011 LGEs. Some of these ward_ids remain unchanged between 2006 and 2011, while others 
-#change due to redistricting, administrative rejigging, etc. First, let's see which ones don't change
-
-
-# READ IN 2011 SHAPE FILE WITH WARD IDs ------------------
-ward2011 <- st_read(here("data", "gis_data_raw", "Wards2011.shp"))
-
-ward2011 <- ward2011 %>% 
-  rename(ward_id = WardID)
-
-# there are duplicates in the original file...filter appropriately
-ward2011 <- ward2011 %>% 
-  distinct(ward_id, .keep_all = TRUE)
-
-ward2011 <- st_transform(ward2011, 6148) #transform to SA's official coordinate system, Hartebeesthoek94 (code 6148)
-
-
-# identify wards that did not change
-ward_ids_unchanged <- ward2011 %>% 
-  filter(ward_id %in% viol_2006_to_2011_ward_ids)
-
-#upon visible inspection, we see that the two ward_ids that appear in 2006 but no longer appear in 2011 are
-#the following: ward_id 64005007 and ward_id 59200068
-
-#in order to get the appropriate centroid locations, I will first take the values that synced correctly and pull their
-#centroid coordinates from the ward2011 shape file
-centroids_vector_1 <- as.data.frame(st_coordinates(st_centroid(ward_ids_unchanged$geometry)))
-
-
-#now need to extract the appropriate centroid coordinates for the two wards that did not sync with 2011 ward_ids...
-#these two wards will need to be connected to the ward2006 shape files in order to extract the correct location
-ward2006 <- st_read(here("data", "gis_data_raw", "Wards2006.shp"))
-ward2006 <- ward2006 %>% 
-  rename(ward_id = WARD_ID)
-
-ward2006 <- st_transform(ward2006, 6148) #transform to SA's official coordinate system, Hartebeesthoek94 (code 6148)
-ward_id_changes <- ward2006 %>% 
-  filter(ward_id == "64005007" | ward_id == "59200068") 
-
-#now extract the centroid coordinates for these two wards
-centroids_vector_2 <- as.data.frame(st_coordinates(st_centroid(ward_id_changes$geometry)))
-
-#combine centroid vectors together to create one vector for all 17 ward observations that were treated between 2006 and 2011
-centroids <- rbind(centroids_vector_1, centroids_vector_2)
-
-#convert centroid vector to an sf_object 
-pnts_sf <- st_as_sf(centroids, coords = c("X", "Y"), crs = st_crs(6148))
-
-#find where these centroid coordinates intersect with wards in elec_data (the 2011 vd results that are in 2016 ward boundaries)
-# first, need to merge elec_data with ward 2016 shape file
-
-# read in 2016 geometry
-ward_2016 <- st_read(here("data", "gis_data_raw", "Wards2016.shp"))
-
-ward_2016 <- st_transform(ward_2016, 6148) #transform to SA's official coordinate system, Hartebeesthoek94 (code 6148)
-names(ward_2016)
-
-ward_2016 <- ward_2016 %>% 
-  select(-c(OBJECTID, Shape__Are, Shape__Len, DistrictMu, District_1, ProvinceNa, WardNumber, Year)) %>% 
-  rename(province_id = ProvinceCo,
-         local_municipality_id = LocalMunic,
-         ward_id = WardID, 
-         local_municipality_name = LocalMun_1)
-
-
-
-# transform to sf object 
-ward_2016 <- st_as_sf(ward_2016)
-
-
-# now find intersection of 2006 LGE ward centroids with 2016 ward boundaries
-pnts <- pnts_sf %>% mutate(
-  intersection = as.integer(st_intersects(geometry, ward_2016)),
-  area = if_else(is.na(intersection), '', ward_2016$ward_id[intersection])
-)
-
-pnts <- pnts %>% 
-  rename(ward_id = area)
-
-pnts <- as.data.frame(pnts)
-pnts <- pnts %>% 
-  select(ward_id)
-
-
-
 #NOW READ IN THE CLEANED CANDIDATES DATA AND CREATE A VARIABLE FOR ASSASSINATION TREATMENT
 data_2011 <- readRDS(here("data", "processed_data", "candidates_clean_2011_extrapolated_to_2016.RDS"))
 
 
 # CREATE DUMMY VARIABLE FOR ANY EXPOSED UNITS ------------------
 data_2011 <- data_2011 %>% 
-  mutate(treat = ifelse(ward_id %in% pnts$ward_id, 1, 0))
-
-# now need to manually fill in target_party, name, and gender data for these 16 wards
-print(pnts$ward_id)
-
-    #now the problem here is that 6 of these ward_ids no longer exist in 2016...so I am going to manually go 
-    #thru and for each missing one find out where its centroid lands in the 2016 geometry
-
-pnts_missing_1 <- ward2011 %>% 
-  filter(ward_id == "52106030")
-
-centroids_missing_1 <- as.data.frame(st_coordinates(st_centroid(pnts_missing_1$geometry)))
-
-centroids_vector_2 <- as.data.frame(st_coordinates(st_centroid(ward_id_changes$geometry)))
-
-
-
-pnts_sf <- st_as_sf(centroids, coords = c("X", "Y"), crs = st_crs(6148))
-
-
-
-pnts_missing_1_interpolate <- pnts_missing_1 %>% mutate(
-  intersection = as.integer(st_intersects(geometry, ward_2016)),
-  area = if_else(is.na(intersection), '', ward_2016$ward_id[intersection])
-)
-
-pnts <- pnts %>% 
-  rename(ward_id = area)
-
-pnts <- as.data.frame(pnts)
-pnts <- pnts %>% 
-  select(ward_id)
-
-
-
-
-
-data_2011 <- data_2011 %>% 
+  mutate(treat = case_when(
+    ward_id == "52307015" ~ 1,
+    ward_id == "52901005" ~ 1,
+    ward_id == "52405005" ~ 1,
+    ward_id == "52405003" ~ 1,
+    ward_id == "52804015" ~ 1,
+    ward_id == "52603005" ~ 1,
+    ward_id == "52401001" ~ 1,
+    ward_id == "83007002" ~ 1,
+    ward_id == "19100086" ~ 1,
+    ward_id == "59500075" ~ 1,
+    ward_id == "52402007" ~ 1,
+    ward_id == "52902021" ~ 1,
+    ward_id == "52307022" ~ 1,
+    ward_id == "74804007" ~ 1,
+    ward_id == "52106030" ~ 1,
+    ward_id == "52405006" ~ 1
+    )) %>% 
   mutate(target_party = case_when(
-    ward_id == "19100086" ~ "ANC",
-    ward_id == "52804015" ~ "IFP",
-    ward_id == "83007003" ~ "ANC",
-    ward_id == "52106030" ~ "",
-    ward_id == "52307021" ~ "",
-    ward_id == "52307015" ~ "",
-    ward_id == "52401001" ~ "",
-    ward_id == "52402007" ~ "IFP",
-    ward_id == "52405005" ~ "IFP",
-    ward_id == "52405009" ~ "IFP",
-    ward_id == "52405011" ~ "IFP",
-    ward_id == "52603005" ~ "ANC",
+    ward_id == "52307015" ~ "IFP",
     ward_id == "52901005" ~ "IFP",
-    ward_id == "52902004" ~ "ANC",
-    ward_id == "59500075" ~ "",
-    ward_id == "74804007" ~ ""
+    ward_id == "52405005" ~ "IFP",
+    ward_id == "52405003" ~ "IFP",
+    ward_id == "52804015" ~ "IFP",
+    ward_id == "52603005" ~ "ANC",
+    ward_id == "52401001" ~ "IFP",
+    ward_id == "83007002" ~ "ANC",
+    ward_id == "19100086" ~ "ANC",
+    ward_id == "59500075" ~ "Independent",
+    ward_id == "52402007" ~ "IFP",
+    ward_id == "52902021" ~ "ANC",
+    ward_id == "52307022" ~ "IFP",
+    ward_id == "74804007" ~ "ANC",
+    ward_id == "52106030" ~ "ANC",
+    ward_id == "52405006" ~ "IFP"
   )) %>% 
   mutate(target_name = case_when(
-    ward_id == "19100086" ~ "Xolani Ronald Sotashe",
-    ward_id == "52804015" ~ "Mfanafuthi Elliot Maphumulo",
-    ward_id == "83007003" ~ "Thandi Pauline Mtsweni",
-    ward_id == "52106030" ~ "",
-    ward_id == "52307021" ~ "",
-    ward_id == "52307015" ~ "",
-    ward_id == "52401001" ~ "Petrous Nxele",
-    ward_id == "52402007" ~ "Dumelani Jerome Zulu",
-    ward_id == "52405005" ~ "Enoch Sibongiseni Shange",
-    ward_id == "52405009" ~ "Emmanuel Ntuthuko Ngcobo",
-    ward_id == "52405011" ~ "Mnziwami Benard Mbatha",
-    ward_id == "52603005" ~ "Mfana Alpheus Xulu",
+    ward_id == "52307015" ~ "Mcobiseni Patrick Duma",
     ward_id == "52901005" ~ "Simon Dingindawo Shange",
-    ward_id == "52902004" ~ "Preva Khumalo",
-    ward_id == "59500075" ~ "",
-    ward_id == "74804007" ~ ""
+    ward_id == "52405005" ~ "Enoch Sibongiseni Shange",
+    ward_id == "52405003" ~ "Emmanuel Ntuthuko Ngcobo",
+    ward_id == "52804015" ~ "Mfanafuthi Elliot Maphumulo",
+    ward_id == "52603005" ~ "Mfana Alpheus Xulu",
+    ward_id == "52401001" ~ "Petrous Nxele",
+    ward_id == "83007002" ~ "Thandi Pauline Mtsweni",
+    ward_id == "19100086" ~ "Xolani Ronald Sotashe",
+    ward_id == "59500075" ~ "Rajahrathanum Marimuthu Naidoo",
+    ward_id == "52402007" ~ "Dumelani Jerome Zulu",
+    ward_id == "52902021" ~ "Preva Khumalo",
+    ward_id == "52307022" ~ "Dlangamandla Rich Mchunu",
+    ward_id == "74804007" ~ "Mphela Dorah Modise",
+    ward_id == "52106030" ~ "Maurus Zakhele Cele",
+    ward_id == "52405006" ~ "Mnziwami Benard Mbatha"
   )) %>% 
   mutate(target_gender = case_when(
-    ward_id == "19100086" ~ "male",
-    ward_id == "52804015" ~ "male",
-    ward_id == "83007003" ~ "female",
-    ward_id == "52106030" ~ "",
-    ward_id == "52307021" ~ "",
-    ward_id == "52307015" ~ "",
-    ward_id == "52401001" ~ "",
-    ward_id == "52402007" ~ "male",
-    ward_id == "52405005" ~ "male",
-    ward_id == "52405009" ~ "male",
-    ward_id == "52405011" ~ "male",
-    ward_id == "52603005" ~ "male",
+    ward_id == "52307015" ~ "male",
     ward_id == "52901005" ~ "male",
-    ward_id == "52902004" ~ "male",
-    ward_id == "59500075" ~ "",
-    ward_id == "74804007" ~ ""
+    ward_id == "52405005" ~ "male",
+    ward_id == "52405003" ~ "male",
+    ward_id == "52804015" ~ "male",
+    ward_id == "52603005" ~ "male",
+    ward_id == "52401001" ~ "male",
+    ward_id == "83007002" ~ "female",
+    ward_id == "19100086" ~ "male",
+    ward_id == "59500075" ~ "male",
+    ward_id == "52402007" ~ "male",
+    ward_id == "52902021" ~ "male",
+    ward_id == "52307022" ~ "male",
+    ward_id == "74804007" ~ "female",
+    ward_id == "52106030" ~ "male",
+    ward_id == "52405006" ~ "male"
+  )) %>% 
+  mutate(local_municipality_id = case_when(
+    ward_id == "52307015" ~ "KZN237",
+    ward_id == "52901005" ~ "KZN291",
+    ward_id == "52405005" ~ "KZN245",
+    ward_id == "52405003" ~ "KZN245",
+    ward_id == "52804015" ~ "KZN284",
+    ward_id == "52603005" ~ "KZN263",
+    ward_id == "52401001" ~ "KZN241",
+    ward_id == "83007002" ~ "MP307",
+    ward_id == "19100086" ~ "CPT",
+    ward_id == "59500075" ~ "ETH",
+    ward_id == "52402007" ~ "KZN242",
+    ward_id == "52902021" ~ "529020",
+    ward_id == "52307022" ~ "KZN292",
+    ward_id == "74804007" ~ "GT484",
+    ward_id == "52106030" ~ "KZN216",
+    ward_id == "52405006" ~ "KZN245"
   ))
-
-
-
 
 
 # check to make sure this worked properly: 
