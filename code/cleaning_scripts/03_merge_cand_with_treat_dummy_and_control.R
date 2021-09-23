@@ -21,9 +21,6 @@ glimpse(data_2011)
 glimpse(data_2016)
   # I need to update/change the variable type (class) for a few of the vars in data_2011 & data_2016 for a clean merger
 
-data_2006 <- data_2006 %>% 
-  mutate(ward_id = as.factor(ward_id))
-
 data_2011 <- data_2011 %>% 
   mutate(ward_id = as.factor(ward_id))
 
