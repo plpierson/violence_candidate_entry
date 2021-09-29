@@ -77,13 +77,14 @@ data_summary <- data %>%
   mutate(sum_candidates = n()) %>% 
   ungroup() %>% 
   group_by(ward_id) %>% 
-  mutate(num_male = sum(length(which(gender=="M")))) %>% 
+  mutate(num_male = sum(length(which(gender=="M"))),
+         num_female = sum(length(which(gender=="F")))) %>% 
   ungroup() %>% 
   group_by(ward_id) %>% 
   mutate(mean_age = mean(age, na.rm = TRUE)) %>% 
   mutate(prop_female = 1 - (num_male / sum_candidates)) %>% 
   distinct(ward_id, .keep_all = TRUE) %>% 
-  select(province, local_municipality_id, local_municipality_name, sum_candidates, num_male, mean_age, prop_female)
+  select(province, local_municipality_id, local_municipality_name, sum_candidates, num_male, num_female, mean_age, prop_female)
 
 
     # check out aggregate/summary data for ward-level variables
@@ -94,6 +95,7 @@ length(unique(data_summary$local_municipality_name)) # 234
 
 sum(data_summary$sum_candidates) # 30501...great, this comports with number of candidates in raw data
 sum(data_summary$num_male) # 20509...great, this comports with number of male candidates in raw data
+sum(data_summary$num_female)
 summary(data_summary$mean_age)
 
 
@@ -156,7 +158,7 @@ data_final <- aw_interpolate(ward_2016_shape_file,
                         weight = "sum",
                         output = "tibble",
                         intensive = c("mean_age", "prop_female"),
-                        extensive = c("sum_candidates", "num_male")
+                        extensive = c("sum_candidates", "num_male", "num_female")
                         )
 
 data_final <- data_final %>% 
@@ -166,3 +168,110 @@ data_final <- data_final %>%
 
   # WRITE TO PROCESSED_DATA FOLDER -----------------------
 saveRDS(data_final, here("data", "processed_data", "candidates_clean_2011_extrapolated_to_2016.RDS"))
+
+
+
+##################################################################################
+##################################################################################
+######################### AGGREGATE TO MUNICIPAL LEVEL ###########################
+##################################################################################
+##################################################################################
+
+
+data_summary <- data %>% 
+  group_by(local_municipality_id) %>% 
+  mutate(sum_candidates = n()) %>% 
+  ungroup() %>% 
+  group_by(local_municipality_id) %>% 
+  mutate(num_male = sum(length(which(gender=="M"))),
+         num_female = sum(length(which(gender=="F")))) %>% 
+  ungroup() %>% 
+  group_by(local_municipality_id) %>% 
+  mutate(mean_age = mean(age, na.rm = TRUE)) %>% 
+  mutate(prop_female = 1 - (num_male / sum_candidates)) %>% 
+  mutate(num_independents = sum(length(which(party_name == "INDEPENDENT CANDIDATE")))) %>% 
+  mutate(num_ind_female = sum(length(which(party_name == "INDEPENDENT CANDIDATE" & gender=="F")))) %>% 
+  mutate(num_ind_male = sum(length(which(party_name == "INDEPENDENT CANDIDATE" & gender=="M")))) %>% 
+  distinct(local_municipality_id, .keep_all = TRUE) %>% 
+  select(province, local_municipality_id, local_municipality_name,
+         sum_candidates, num_male, num_female, mean_age, prop_female, num_independents,
+         num_ind_female, num_ind_male)
+
+
+data_num_parties <- data %>% 
+  filter(party_name != "INDEPENDENT CANDIDATE") %>% 
+  group_by(local_municipality_id) %>% 
+  mutate(num_parties_contest = n_distinct(party_name)) %>% 
+  distinct(local_municipality_id, .keep_all = TRUE) %>% 
+  select(local_municipality_id, num_parties_contest)
+
+
+data_summary <- left_join(data_summary, data_num_parties, by = "local_municipality_id")
+
+
+
+##############################################
+######## READ IN MUNICIPAL SHAPE FILE ########
+##############################################
+
+mun_shape_file <- st_read(here("data", "gis_data_raw", "MDB_Local_Municipal_Boundary_2011.shp"))
+
+mun_shape_file <- st_transform(mun_shape_file, 6148) #transform to SA's official coordinate system, Hartebeesthoek94 (code 6148)
+
+
+mun_shape_file <- mun_shape_file %>% 
+  rename(province = ProvinceNa,
+         local_municipality_id = LocalMunic) %>% 
+  select(province, local_municipality_id, geometry)
+
+
+# join candidates data to shape file
+data_join <- left_join(data_summary, mun_shape_file, by = "local_municipality_id") 
+
+
+#####################################################
+######## INTERPOLATE TO 2016 MUNICIPAL BOUNDARIES ########
+#####################################################
+
+mun_2016_shape_file <- st_read(here("data", "gis_data_raw", "ecc03798-c4f1-42e2-a0e6-573c0c07c8542020410-1-1psvop3.0vyd.shp"))
+
+# TRANSFORM SHAPE FILES TO SA'S OFFICIAL COORDINATE SYSTEM -----------------------
+mun_2016_shape_file <- st_transform(mun_2016_shape_file, 6148) #transform to SA's official coordinate system, Hartebeesthoek94 (code 6148)
+
+
+mun_2016_shape_file <- mun_2016_shape_file %>% 
+  rename(local_municipality_id = LocalMunic) %>% 
+  select(local_municipality_id, geometry)
+
+
+# CONVERT DATA TO SF OBJECTS IN ORDER TO PERFORM AREAL INTERPOLATION -----------------------
+data_join <- st_as_sf(data_join)
+mun_2016_shape_file <- st_as_sf(mun_2016_shape_file)
+
+
+# VALIDATE GEOM -----------------------
+data_join <- st_make_valid(data_join)
+st_is_valid(data_join, reason = TRUE)
+
+mun_2016_shape_file <- st_make_valid(mun_2016_shape_file)
+st_is_valid(mun_2016_shape_file, reason=TRUE)
+
+
+# interpolate to 2016 polygons
+data_final <- aw_interpolate(mun_2016_shape_file,
+                             tid = local_municipality_id,
+                             source = data_join,
+                             sid = local_municipality_id,
+                             weight = "sum",
+                             output = "tibble",
+                             intensive = c("mean_age", "prop_female"),
+                             extensive = c("sum_candidates", "num_male", "num_female", "num_independents", "num_ind_female", "num_ind_male", "num_parties_contest")
+)
+
+data_final <- data_final %>% 
+  mutate(electoral_cycle = 2011) %>% 
+  mutate(electoral_cycle = as.factor(electoral_cycle))
+
+
+# WRITE TO PROCESSED_DATA FOLDER -----------------------
+saveRDS(data_final, here("data", "processed_data", "candidates_clean_2011_interpolated_to_2016_MUNICIPALITY.RDS"))
