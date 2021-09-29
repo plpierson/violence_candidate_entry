@@ -76,7 +76,7 @@ summary(data$age) # no NA...though an 88 year old ran somewhere!
 
 
 
-  #### NOW AGGREGATE THE DATA TO GET SUMMARY VALUES AT THE MUNICIPAL LEVEL 
+  #### NOW AGGREGATE THE DATA TO GET SUMMARY VALUES AT THE WARD LEVEL 
 data_summary <- data %>% 
   group_by(ward_id) %>% 
   mutate(sum_candidates = n()) %>% 
@@ -109,3 +109,31 @@ data_summary <- data_summary %>%
 
 # WRITE TO PROCESSED_DATA FOLDER -----------------------
 saveRDS(data_summary, here("data", "processed_data", "candidates_clean_2016.RDS"))
+
+
+##################################################################################
+##################################################################################
+######################### AGGREGATE TO MUNICIPAL LEVEL ###########################
+##################################################################################
+##################################################################################
+
+data_summary <- data %>% 
+  group_by(local_municipality_id) %>% 
+  mutate(sum_candidates = n()) %>% 
+  ungroup() %>% 
+  group_by(local_municipality_id) %>% 
+  mutate(num_male = sum(length(which(gender=="M"))),
+         num_female = sum(length(which(gender=="F")))) %>% 
+  ungroup() %>% 
+  group_by(local_municipality_id) %>% 
+  mutate(mean_age = mean(age, na.rm = TRUE)) %>% 
+  mutate(prop_female = 1 - (num_male / sum_candidates)) %>% 
+  distinct(local_municipality_id, .keep_all = TRUE) %>% 
+  select(local_municipality_id, local_municipality_name, electoral_cycle, sum_candidates, num_male, num_female, mean_age, prop_female)
+
+
+
+
+
+# WRITE TO PROCESSED_DATA FOLDER -----------------------
+saveRDS(data_summary, here("data", "processed_data", "candidates_clean_2016_MUNICIPALITY.RDS"))
