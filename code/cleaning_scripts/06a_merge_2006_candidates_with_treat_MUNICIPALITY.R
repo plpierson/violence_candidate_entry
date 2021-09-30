@@ -30,14 +30,14 @@ viol_mun <- viol %>%
 #viol_ward_sitting <- viol_ward %>% 
 #  filter(sitting == 1)
 
-viol_2006_to_2011 <- viol_mun %>% 
-  filter(date_of_attack > "2006-03-01" & date_of_attack < "2011-05-18")
+viol_2000_to_2006 <- viol_mun %>% 
+  filter(date_of_attack > "2000-12-05" & date_of_attack < "2006-03-01")
 
 # MANUALLY LINK 2006 WARD IDS TO 2016 WARD IDS USING CENTROID COORDINATES ------------------
 
 
 # first we will need to read in 2006 and 2016 geometries
-# read in 2006 geomtry
+# read in 2006 geometry
 mun2006 <- st_read(here("data", "gis_data_raw", "LocalMunicipalities2006.shp"))
 mun2006 <- mun2006 %>% 
   rename(local_municipality_id = CAT_B)
@@ -65,71 +65,23 @@ mun_2016 <- st_as_sf(mun_2016)
 
 
 #### MUN 1
-print(viol_2006_to_2011$local_municipality_id)
-pnts1 <- mun2006 %>% 
-  filter(local_municipality_id == "KZN226")
-
-centroids1 <- as.data.frame(st_coordinates(st_centroid(pnts1$geometry)))
-
-interpolate_centroids1 <- st_as_sf(centroids1, coords = c("X", "Y"), crs = st_crs(6148))
-
-interpolate1 <- interpolate_centroids1 %>% mutate(
-  intersection = as.integer(st_intersects(geometry, mun_2016)),
-  area = if_else(is.na(intersection), '', mun_2016$local_municipality_id[intersection])
-)
-
-pnts1$local_municipality_id
-interpolate1$area
-#so KZN226 is now KZN226
-
+print(viol_2000_to_2006$local_municipality_id)
+# ETH is still ETH
 
 #### MUN 2
-print(viol_2006_to_2011$local_municipality_id)
+# ETH is still ETH
 
-#ETH is still ETH
-
-#### MUN 3
-print(viol_2006_to_2011$local_municipality_id)
-pnts3 <- mun2006 %>% 
-  filter(local_municipality_id == "KZN236")
-
-centroids3 <- as.data.frame(st_coordinates(st_centroid(pnts3$geometry)))
-
-interpolate_centroids3 <- st_as_sf(centroids3, coords = c("X", "Y"), crs = st_crs(6148))
-
-interpolate3 <- interpolate_centroids3 %>% mutate(
-  intersection = as.integer(st_intersects(geometry, mun_2016)),
-  area = if_else(is.na(intersection), '', mun_2016$local_municipality_id[intersection])
-)
-
-pnts3$local_municipality_id
-interpolate3$area
-#so KZN236 is now KZN237
-
+#### MUN 3 
+# ETH is still ETH
 
 #### MUN 4
-print(viol_2006_to_2011$local_municipality_id)
-pnts4 <- mun2006 %>% 
-  filter(local_municipality_id == "KZN291")
+#NW405 is now GT484
 
-centroids4 <- as.data.frame(st_coordinates(st_centroid(pnts4$geometry)))
+#### MUN 5 
+print(viol_2000_to_2006$local_municipality_id)
 
-interpolate_centroids4 <- st_as_sf(centroids4, coords = c("X", "Y"), crs = st_crs(6148))
-
-interpolate4 <- interpolate_centroids4 %>% mutate(
-  intersection = as.integer(st_intersects(geometry, mun_2016)),
-  area = if_else(is.na(intersection), '', mun_2016$local_municipality_id[intersection])
-)
-
-pnts4$local_municipality_id
-interpolate4$area
-#so KZN291 is still KZN291
-
-
-#### MUN 5
-print(viol_2006_to_2011$local_municipality_id)
 pnts5 <- mun2006 %>% 
-  filter(COMMON_NAM == "Carletonville")
+  filter(local_municipality_id == "KZN225")
 
 centroids5 <- as.data.frame(st_coordinates(st_centroid(pnts5$geometry)))
 
@@ -142,79 +94,68 @@ interpolate5 <- interpolate_centroids5 %>% mutate(
 
 pnts5$local_municipality_id
 interpolate5$area
-#so Carletonville/CBLC8 is now GT484
+#so KZN225 is still KZN225
 
+#### MUN 6 
+print(viol_2000_to_2006$local_municipality_id)
 
-#### MUN 6
-print(viol_2006_to_2011$local_municipality_id)
-pnts6 <- mun2006 %>% 
-  filter(local_municipality_id == "FS171")
-
-centroids6 <- as.data.frame(st_coordinates(st_centroid(pnts6$geometry)))
-
-interpolate_centroids6 <- st_as_sf(centroids6, coords = c("X", "Y"), crs = st_crs(6148))
-
-interpolate6 <- interpolate_centroids6 %>% mutate(
-  intersection = as.integer(st_intersects(geometry, mun_2016)),
-  area = if_else(is.na(intersection), '', mun_2016$local_municipality_id[intersection])
-)
-
-pnts6$local_municipality_id
-interpolate6$area
-#so FS171 is now MAN
+# ETH is still ETH
 
 
 #### MUN 7
-print(viol_2006_to_2011$local_municipality_id)
-pnts7 <- mun2006 %>% 
-  filter(local_municipality_id == "KZN245")
+# ETH is still ETH
 
-centroids7 <- as.data.frame(st_coordinates(st_centroid(pnts7$geometry)))
+#### MUN 8
+print(viol_2000_to_2006$local_municipality_id)
 
-interpolate_centroids7 <- st_as_sf(centroids7, coords = c("X", "Y"), crs = st_crs(6148))
+pnts8 <- mun2006 %>% 
+  filter(local_municipality_id == "KZN281")
 
-interpolate7 <- interpolate_centroids7 %>% mutate(
+centroids8 <- as.data.frame(st_coordinates(st_centroid(pnts8$geometry)))
+
+interpolate_centroids8 <- st_as_sf(centroids8, coords = c("X", "Y"), crs = st_crs(6148))
+
+interpolate8 <- interpolate_centroids8 %>% mutate(
   intersection = as.integer(st_intersects(geometry, mun_2016)),
   area = if_else(is.na(intersection), '', mun_2016$local_municipality_id[intersection])
 )
 
-pnts7$local_municipality_id
-interpolate7$area
-#so KZN245 is still KZN245
+pnts8$local_municipality_id
+interpolate8$area
+#so KZN281 is still KZN281
 
-
-#### MUN 8
-
-#KZN245 is still KZN245
 
 #### MUN 9
+print(viol_2000_to_2006$local_municipality_id)
 
-#ETH is still ETH
+pnts9 <- mun2006 %>% 
+  filter(local_municipality_id == "KZN236")
+
+centroids9 <- as.data.frame(st_coordinates(st_centroid(pnts9$geometry)))
+
+interpolate_centroids9 <- st_as_sf(centroids9, coords = c("X", "Y"), crs = st_crs(6148))
+
+interpolate9 <- interpolate_centroids9 %>% mutate(
+  intersection = as.integer(st_intersects(geometry, mun_2016)),
+  area = if_else(is.na(intersection), '', mun_2016$local_municipality_id[intersection])
+)
+
+pnts9$local_municipality_id
+interpolate9$area
+#so KZN236 is now KZN237
 
 
 #### MUN 10
-print(viol_2006_to_2011$local_municipality_id)
-pnts10 <- mun2006 %>% 
-  filter(local_municipality_id == "NW373")
+print(viol_2000_to_2006$local_municipality_id)
 
-centroids10 <- as.data.frame(st_coordinates(st_centroid(pnts10$geometry)))
-
-interpolate_centroids10 <- st_as_sf(centroids10, coords = c("X", "Y"), crs = st_crs(6148))
-
-interpolate10 <- interpolate_centroids10 %>% mutate(
-  intersection = as.integer(st_intersects(geometry, mun_2016)),
-  area = if_else(is.na(intersection), '', mun_2016$local_municipality_id[intersection])
-)
-
-pnts10$local_municipality_id
-interpolate10$area
-#so NW373 is still NW373
+#so KZN236 is now KZN237
 
 
 #### MUN 11
-print(viol_2006_to_2011$local_municipality_id)
+print(viol_2000_to_2006$local_municipality_id)
+
 pnts11 <- mun2006 %>% 
-  filter(local_municipality_id == "KZN284")
+  filter(local_municipality_id == "KZN265")
 
 centroids11 <- as.data.frame(st_coordinates(st_centroid(pnts11$geometry)))
 
@@ -227,13 +168,13 @@ interpolate11 <- interpolate_centroids11 %>% mutate(
 
 pnts11$local_municipality_id
 interpolate11$area
-#so NKZN284 is still KZN284
-
+#so KZN265 is still KZN265
 
 #### MUN 12
-print(viol_2006_to_2011$local_municipality_id)
+print(viol_2000_to_2006$local_municipality_id)
+
 pnts12 <- mun2006 %>% 
-  filter(local_municipality_id == "MP322")
+  filter(local_municipality_id == "KZN234")
 
 centroids12 <- as.data.frame(st_coordinates(st_centroid(pnts12$geometry)))
 
@@ -246,13 +187,14 @@ interpolate12 <- interpolate_centroids12 %>% mutate(
 
 pnts12$local_municipality_id
 interpolate12$area
-#so MP322 is now MP326
+#so KZN234 is now KZN237
 
 
 #### MUN 13
-print(viol_2006_to_2011$local_municipality_id)
+print(viol_2000_to_2006$local_municipality_id)
+
 pnts13 <- mun2006 %>% 
-  filter(local_municipality_id == "KZN263")
+  filter(local_municipality_id == "KZN272")
 
 centroids13 <- as.data.frame(st_coordinates(st_centroid(pnts13$geometry)))
 
@@ -265,30 +207,19 @@ interpolate13 <- interpolate_centroids13 %>% mutate(
 
 pnts13$local_municipality_id
 interpolate13$area
-#so KZN263 is still KZN263
+#so KZN272 is still KZN272
 
 #### MUN 14
-print(viol_2006_to_2011$local_municipality_id)
-pnts14 <- mun2006 %>% 
-  filter(local_municipality_id == "KZN241")
+print(viol_2000_to_2006$local_municipality_id)
 
-centroids14 <- as.data.frame(st_coordinates(st_centroid(pnts14$geometry)))
+#ETH is still ETH
 
-interpolate_centroids14 <- st_as_sf(centroids14, coords = c("X", "Y"), crs = st_crs(6148))
-
-interpolate14 <- interpolate_centroids14 %>% mutate(
-  intersection = as.integer(st_intersects(geometry, mun_2016)),
-  area = if_else(is.na(intersection), '', mun_2016$local_municipality_id[intersection])
-)
-
-pnts14$local_municipality_id
-interpolate14$area
-#so KZN241 is still KZN241
 
 #### MUN 15
-print(viol_2006_to_2011$local_municipality_id)
+print(viol_2000_to_2006$local_municipality_id)
+
 pnts15 <- mun2006 %>% 
-  filter(local_municipality_id == "WC024")
+  filter(local_municipality_id == "KZN291")
 
 centroids15 <- as.data.frame(st_coordinates(st_centroid(pnts15$geometry)))
 
@@ -301,60 +232,71 @@ interpolate15 <- interpolate_centroids15 %>% mutate(
 
 pnts15$local_municipality_id
 interpolate15$area
-#so WC024 is still WC024
+#so KZN291 is still KZN291
+
 
 
 #### MUN 16
-print(viol_2006_to_2011$local_municipality_id)
-pnts16 <- mun2006 %>% 
-  filter(local_municipality_id == "FS204")
+print(viol_2000_to_2006$local_municipality_id)
 
-centroids16 <- as.data.frame(st_coordinates(st_centroid(pnts16$geometry)))
+# ETH is still ETH
 
-interpolate_centroids16 <- st_as_sf(centroids16, coords = c("X", "Y"), crs = st_crs(6148))
-
-interpolate16 <- interpolate_centroids16 %>% mutate(
-  intersection = as.integer(st_intersects(geometry, mun_2016)),
-  area = if_else(is.na(intersection), '', mun_2016$local_municipality_id[intersection])
-)
-
-pnts16$local_municipality_id
-interpolate16$area
-#so FS204 is still FS204
-
-
-#### MUN 17
-print(viol_2006_to_2011$local_municipality_id)
-pnts17 <- mun2006 %>% 
-  filter(local_municipality_id == "MP307")
-
-centroids17 <- as.data.frame(st_coordinates(st_centroid(pnts17$geometry)))
-
-interpolate_centroids17 <- st_as_sf(centroids17, coords = c("X", "Y"), crs = st_crs(6148))
-
-interpolate17 <- interpolate_centroids17 %>% mutate(
-  intersection = as.integer(st_intersects(geometry, mun_2016)),
-  area = if_else(is.na(intersection), '', mun_2016$local_municipality_id[intersection])
-)
-
-pnts17$local_municipality_id
-interpolate17$area
-#so MP307 is still MP307
+#### MUN 17 
+# ETH is still ETH
 
 
 #### MUN 18
-#CPT is still CPT
+print(viol_2000_to_2006$local_municipality_id)
+
+pnts18 <- mun2006 %>% 
+  filter(local_municipality_id == "KZN232")
+
+centroids18 <- as.data.frame(st_coordinates(st_centroid(pnts18$geometry)))
+
+interpolate_centroids18 <- st_as_sf(centroids18, coords = c("X", "Y"), crs = st_crs(6148))
+
+interpolate18 <- interpolate_centroids18 %>% mutate(
+  intersection = as.integer(st_intersects(geometry, mun_2016)),
+  area = if_else(is.na(intersection), '', mun_2016$local_municipality_id[intersection])
+)
+
+pnts18$local_municipality_id
+interpolate18$area
+#so KZN232 is now KZN238
+
 
 #### MUN 19
-#CPT is still CPT
+print(viol_2000_to_2006$local_municipality_id)
 
-#### MUN20
-#ETH is still ETH
+# CPT is still CPT
+
+
+#### MUN 20
+print(viol_2000_to_2006$local_municipality_id)
+
+pnts20 <- mun2006 %>% 
+  filter(local_municipality_id == "KZN244")
+
+centroids20 <- as.data.frame(st_coordinates(st_centroid(pnts20$geometry)))
+
+interpolate_centroids20 <- st_as_sf(centroids20, coords = c("X", "Y"), crs = st_crs(6148))
+
+interpolate20 <- interpolate_centroids20 %>% mutate(
+  intersection = as.integer(st_intersects(geometry, mun_2016)),
+  area = if_else(is.na(intersection), '', mun_2016$local_municipality_id[intersection])
+)
+
+pnts20$local_municipality_id
+interpolate20$area
+#so KZN244 is still KZN244
+
+
 
 #### MUN 21
-print(viol_2006_to_2011$local_municipality_id)
+print(viol_2000_to_2006$local_municipality_id)
+
 pnts21 <- mun2006 %>% 
-  filter(local_municipality_id == "KZN242")
+  filter(local_municipality_id == "EC137")
 
 centroids21 <- as.data.frame(st_coordinates(st_centroid(pnts21$geometry)))
 
@@ -367,115 +309,53 @@ interpolate21 <- interpolate_centroids21 %>% mutate(
 
 pnts21$local_municipality_id
 interpolate21$area
-#so KZN242 is still KZN242
+#so EC137 is still EC137
+
+
 
 #### MUN 22
-print(viol_2006_to_2011$local_municipality_id)
-pnts22 <- mun2006 %>% 
-  filter(local_municipality_id == "KZN292")
+print(viol_2000_to_2006$local_municipality_id)
 
-centroids22 <- as.data.frame(st_coordinates(st_centroid(pnts22$geometry)))
-
-interpolate_centroids22 <- st_as_sf(centroids22, coords = c("X", "Y"), crs = st_crs(6148))
-
-interpolate22 <- interpolate_centroids22 %>% mutate(
-  intersection = as.integer(st_intersects(geometry, mun_2016)),
-  area = if_else(is.na(intersection), '', mun_2016$local_municipality_id[intersection])
-)
-
-pnts22$local_municipality_id
-interpolate22$area
-#so KZN292 is still KZN292
-
+# CPT is still CPT
 
 #### MUN 23
-print(viol_2006_to_2011$local_municipality_id)
-pnts23 <- mun2006 %>% 
-  filter(local_municipality_id == "KZN234")
+# CPT is still CPT
 
-centroids23 <- as.data.frame(st_coordinates(st_centroid(pnts23$geometry)))
-
-interpolate_centroids23 <- st_as_sf(centroids23, coords = c("X", "Y"), crs = st_crs(6148))
-
-interpolate23 <- interpolate_centroids23 %>% mutate(
-  intersection = as.integer(st_intersects(geometry, mun_2016)),
-  area = if_else(is.na(intersection), '', mun_2016$local_municipality_id[intersection])
-)
-
-pnts23$local_municipality_id
-interpolate23$area
-#so KZN234 is now KZN237
 
 #### MUN 24
-#KZN234 is KZN237
+# CPT is still CPT
+
 
 #### MUN 25
-#KZN234 is KZN237
+# TSH is still TSH 
+
 
 #### MUN 26
-#NW405 is now GT484
-
-#### MUN 27 
-#NW405 is now GT484
+# KZN291 is still KZN291
 
 
-#### MUN 28
-print(viol_2006_to_2011$local_municipality_id)
-pnts29 <- mun2006 %>% 
-  filter(local_municipality_id == "KZN215")
+#### MUN 27
+print(viol_2000_to_2006$local_municipality_id)
 
-centroids29 <- as.data.frame(st_coordinates(st_centroid(pnts29$geometry)))
+pnts27 <- mun2006 %>% 
+  filter(local_municipality_id == "KZN221")
 
-interpolate_centroids29 <- st_as_sf(centroids29, coords = c("X", "Y"), crs = st_crs(6148))
+centroids27 <- as.data.frame(st_coordinates(st_centroid(pnts27$geometry)))
 
-interpolate29 <- interpolate_centroids29 %>% mutate(
+interpolate_centroids27 <- st_as_sf(centroids27, coords = c("X", "Y"), crs = st_crs(6148))
+
+interpolate27 <- interpolate_centroids27 %>% mutate(
   intersection = as.integer(st_intersects(geometry, mun_2016)),
   area = if_else(is.na(intersection), '', mun_2016$local_municipality_id[intersection])
 )
 
-pnts29$local_municipality_id
-interpolate29$area
-#so KZN215 is now KZN216
+pnts27$local_municipality_id
+interpolate27$area
+#so KZN221 is still KZN221
 
-#### MUN 29
-print(viol_2006_to_2011$local_municipality_id)
-pnts30 <- mun2006 %>% 
-  filter(local_municipality_id == "KZN232")
 
-centroids30 <- as.data.frame(st_coordinates(st_centroid(pnts30$geometry)))
-
-interpolate_centroids30 <- st_as_sf(centroids30, coords = c("X", "Y"), crs = st_crs(6148))
-
-interpolate30 <- interpolate_centroids30 %>% mutate(
-  intersection = as.integer(st_intersects(geometry, mun_2016)),
-  area = if_else(is.na(intersection), '', mun_2016$local_municipality_id[intersection])
-)
-
-pnts30$local_municipality_id
-interpolate30$area
-#so KZN232 is now KZN238
-
-#### MUN 30
-
-#so BUF is still BUF
-
-#### MUN 31
-print(viol_2006_to_2011$local_municipality_id)
-pnts31 <- mun2006 %>% 
-  filter(local_municipality_id == "KZN245")
-
-centroids31 <- as.data.frame(st_coordinates(st_centroid(pnts31$geometry)))
-
-interpolate_centroids31 <- st_as_sf(centroids31, coords = c("X", "Y"), crs = st_crs(6148))
-
-interpolate31 <- interpolate_centroids31 %>% mutate(
-  intersection = as.integer(st_intersects(geometry, mun_2016)),
-  area = if_else(is.na(intersection), '', mun_2016$local_municipality_id[intersection])
-)
-
-pnts31$local_municipality_id
-interpolate31$area
-#so KZN245 is still KZN245
+#### MUN 28 
+#KZN232 is now KZN238
 
 
 #NOW READ IN THE CLEANED CANDIDATES DATA AND CREATE A VARIABLE FOR ASSASSINATION TREATMENT
@@ -485,33 +365,26 @@ data_2006 <- readRDS(here("data", "processed_data", "candidates_clean_2006_inter
 # CREATE DUMMY VARIABLE FOR ANY EXPOSED UNITS ------------------
 data_2006 <- data_2006 %>% 
   mutate(treat = case_when(
-    local_municipality_id == "KZN226" ~ 1,
     local_municipality_id == "ETH" ~ 1,
-    local_municipality_id == "KZN291" ~ 1,
     local_municipality_id == "GT484" ~ 1,
-    local_municipality_id == "MAN" ~ 1,
-    local_municipality_id == "KZN245" ~ 1,
-    local_municipality_id == "NW373" ~ 1,
-    local_municipality_id == "KZN284" ~ 1,
-    local_municipality_id == "MP326" ~ 1,
-    local_municipality_id == "KZN263" ~ 1,
-    local_municipality_id == "KZN241" ~ 1,
-    local_municipality_id == "WC024" ~ 1,
-    local_municipality_id == "FS204" ~ 1,
-    local_municipality_id == "MP307" ~ 1,
-    local_municipality_id == "CPT" ~ 1,
-    local_municipality_id == "KZN242" ~ 1,
-    local_municipality_id == "KZN292" ~ 1,
+    local_municipality_id == "KZN225" ~ 1,
+    local_municipality_id == "KZN281" ~ 1,
     local_municipality_id == "KZN237" ~ 1,
-    local_municipality_id == "KZN216" ~ 1,
+    local_municipality_id == "KZN265" ~ 1,
+    local_municipality_id == "KZN272" ~ 1,
+    local_municipality_id == "KZN291" ~ 1,
     local_municipality_id == "KZN238" ~ 1,
-    local_municipality_id == "BUF" ~ 1
+    local_municipality_id == "CPT" ~ 1,
+    local_municipality_id == "KZN244" ~ 1,
+    local_municipality_id == "EC137" ~ 1,
+    local_municipality_id == "TSH" ~ 1,
+    local_municipality_id == "KZN221" ~ 1
   )) 
 
 
 
 # check to make sure this worked properly: 
-length(which(data_2006$treat==1)) ###21
+length(which(data_2006$treat==1)) ###14
 
 
 # WRITE OUT DATA TO PROCESSED_DATA FILE
